@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const string BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; //替换成你的 TOKEN
+const string BOT_TOKEN = "8450632696:AAH2sduBpxTUgJBZJAGCAJsayr2E4nCaYXg"; //替换成你的 TOKEN
 const int VERIFICATION_TIMEOUT_MINUTES = 5;
 
 enum class VerificationStatus 
@@ -67,7 +67,7 @@ int main()
                         int user_answer = stoi(message->text);
                         if (user_answer == session.correctAnswer) 
                         {
-                            bot.getApi().sendMessage(message->chat->id, "✅ 回答正确，验证通过！");
+                            bot.getApi().sendMessage(message->chat->id, "✅ 好厉害！回答正确啦！\n验证通过~");
                             
                             auto perms_to_grant = make_shared<TgBot::ChatPermissions>();
                             perms_to_grant->canSendMessages = true;
@@ -92,12 +92,12 @@ int main()
                         } 
                         else 
                         {
-                            bot.getApi().sendMessage(message->chat->id, "❌ 回答错误，请重试。");
+                            bot.getApi().sendMessage(message->chat->id, "❌ 噗噗~回答错误~~，请重试喵~");
                         }
                     } 
                     catch (const exception& e) 
                     {
-                        bot.getApi().sendMessage(message->chat->id, "请输入一个有效的数字。");
+                        bot.getApi().sendMessage(message->chat->id, "请输入一个有效的数字喵~");
                     }
                 }
             }
@@ -129,13 +129,13 @@ int main()
             auto keyboard = make_shared<TgBot::InlineKeyboardMarkup>();
             vector<TgBot::InlineKeyboardButton::Ptr> row;
             auto button = make_shared<TgBot::InlineKeyboardButton>();
-            button->text = "👉 点击这里开始私聊验证";
+            button->text = "💞 点击这里开始私聊验证~💞";
             button->url = url;
             row.push_back(button);
             keyboard->inlineKeyboard.push_back(row);
 
-            string text = "欢迎 " + user->firstName + "! 🤖\n为防机器人广告，请在 " + to_string(VERIFICATION_TIMEOUT_MINUTES) + " 分钟内点击下方按钮，通过私聊完成算术题验证。";
-            TgBot::Message::Ptr sent_message = bot.getApi().sendMessage(chat->id, text, nullptr, nullptr, keyboard, "HTML");
+            string text = "nya~欢迎 " + user->firstName + "! \n请在 " + to_string(VERIFICATION_TIMEOUT_MINUTES) + " 分钟内点击下方按钮，通过私聊完成算术题验证。才能正式入群哦~";
+            TgBot::Message::Ptr sent_message = bot.getApi().sendMessage(chat->id, text, false, 0, keyboard, "HTML");
             
             {
                 lock_guard<mutex> lock(sessions_mutex);
@@ -182,7 +182,7 @@ int main()
                 int64_t group_id = stoll(payload.substr(first_underscore + 1));
                 if (message->from->id != user_id) 
                 {
-                    bot.getApi().sendMessage(message->chat->id, "您不能替他人进行验证。");
+                    bot.getApi().sendMessage(message->chat->id, "您不可以替他人进行验证哦~");
                     return;
                 }
                 lock_guard<mutex> lock(sessions_mutex);
@@ -195,8 +195,8 @@ int main()
                     int num1 = distrib(gen); int num2 = distrib(gen);
                     it->second.correctAnswer = num1 + num2;
                     it->second.status = VerificationStatus::AwaitingAnswer;
-                    string question = "请计算下面的算术题并发送答案：\n\n**" + to_string(num1) + " + " + to_string(num2) + " = ?**";
-                    bot.getApi().sendMessage(message->chat->id, question, nullptr, nullptr, nullptr, "Markdown");
+                    string question = "请计算下面的算术题并发送答案喵：\n\n**" + to_string(num1) + " + " + to_string(num2) + " = ?**";
+                    bot.getApi().sendMessage(message->chat->id, question, false, 0, nullptr, "Markdown");
                 } 
                 else 
                 {
@@ -210,7 +210,7 @@ int main()
         } 
         else 
         {
-            bot.getApi().sendMessage(message->chat->id, "你好！我是一个群组验证机器人。");
+            bot.getApi().sendMessage(message->chat->id, "你好喵~我是群组验证女仆。");
         }
     });
 
