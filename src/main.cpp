@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const string BOT_TOKEN = "8450632696:AAH2sduBpxTUgJBZJAGCAJsayr2E4nCaYXg"; //替换成你的 TOKEN
+const string BOT_TOKEN = ""; //替换成你的 TOKEN
 const int VERIFICATION_TIMEOUT_MINUTES = 5;
 
 enum class VerificationStatus 
@@ -135,7 +135,7 @@ int main()
             keyboard->inlineKeyboard.push_back(row);
 
             string text = "nya~欢迎 " + user->firstName + "! \n请在 " + to_string(VERIFICATION_TIMEOUT_MINUTES) + " 分钟内点击下方按钮，通过私聊完成算术题验证。才能正式入群哦~";
-            TgBot::Message::Ptr sent_message = bot.getApi().sendMessage(chat->id, text, nullptr, nullptr, keyboard, "HTML");
+            TgBot::Message::Ptr sent_message = bot.getApi().sendMessage(chat->id, text, false, 0, keyboard, "HTML");
             
             {
                 lock_guard<mutex> lock(sessions_mutex);
@@ -211,8 +211,8 @@ int main()
                     int num1 = distrib(gen); int num2 = distrib(gen);
                     it->second.correctAnswer = num1 + num2;
                     it->second.status = VerificationStatus::AwaitingAnswer;
-                    string question = "请计算下面的算术题并发送答案喵：\n\n**" + to_string(num1) + " + " + to_string(num2) + " = ?**";
-                    bot.getApi().sendMessage(message->chat->id, question, nullptr, nullptr, nullptr, "Markdown");
+                    string question = "请计算下面的算术题并发送答案：\n\n**" + to_string(num1) + " + " + to_string(num2) + " = ?**";
+                    bot.getApi().sendMessage(message->chat->id, question, false, 0, nullptr, "Markdown");
                 } 
                 else 
                 {
