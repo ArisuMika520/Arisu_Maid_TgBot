@@ -83,7 +83,7 @@ int main()
                             
                             bot.getApi().restrictChatMember(session.groupId, user_id, perms_to_grant, false, 0);
 
-                            bot.getApi().deleteMessage(session.groupId, session.groupMessageId);
+                            // 验证消息会由定时器自动删除，这里只需要清理会话
                             {
                                 lock_guard<mutex> lock(sessions_mutex);
                                 verification_sessions.erase(user_id);
@@ -135,14 +135,31 @@ int main()
             keyboard->inlineKeyboard.push_back(row);
 
             string text = "nya~欢迎 " + user->firstName + "! \n请在 " + to_string(VERIFICATION_TIMEOUT_MINUTES) + " 分钟内点击下方按钮，通过私聊完成算术题验证。才能正式入群哦~";
-            TgBot::Message::Ptr sent_message = bot.getApi().sendMessage(chat->id, text, false, 0, keyboard, "HTML");
+            TgBot::Message::Ptr sent_message = bot.getApi().sendMessage(chat->id, text, nullptr, nullptr, keyboard, "HTML");
             
             {
                 lock_guard<mutex> lock(sessions_mutex);
                 verification_sessions[user->id] = {chat->id, sent_message->messageId, 0, VerificationStatus::PendingStart};
             }
 
-            thread([&bot, user_id = user->id, chat_id = chat->id, message_id = sent_message->messageId]() 
+            // 启动两个独立的定时器
+            // 1. 删除验证消息的定时器（5分钟后无论如何都删除）
+            thread([&bot, chat_id = chat->id, message_id = sent_message->messageId]() 
+            {
+                this_thread::sleep_for(chrono::minutes(VERIFICATION_TIMEOUT_MINUTES));
+                try 
+                {
+                    bot.getApi().deleteMessage(chat_id, message_id);
+                    cout << "验证消息已自动删除 (消息ID: " << message_id << ")" << endl;
+                } 
+                catch (TgBot::TgException& e) 
+                {
+                    // 消息可能已被删除，忽略错误
+                }
+            }).detach();
+            
+            // 2. 用户超时处理定时器
+            thread([&bot, user_id = user->id, chat_id = chat->id]() 
             {
                 this_thread::sleep_for(chrono::minutes(VERIFICATION_TIMEOUT_MINUTES));
                 lock_guard<mutex> lock(sessions_mutex);
@@ -153,7 +170,6 @@ int main()
                     {
                         cout << "用户 " << user_id << " 超时，正在移出..." << endl;
                         bot.getApi().banChatMember(chat_id, user_id);
-                        bot.getApi().deleteMessage(chat_id, message_id);
                     } 
                     catch (TgBot::TgException& e) 
                     {
@@ -196,7 +212,7 @@ int main()
                     it->second.correctAnswer = num1 + num2;
                     it->second.status = VerificationStatus::AwaitingAnswer;
                     string question = "请计算下面的算术题并发送答案喵：\n\n**" + to_string(num1) + " + " + to_string(num2) + " = ?**";
-                    bot.getApi().sendMessage(message->chat->id, question, false, 0, nullptr, "Markdown");
+                    bot.getApi().sendMessage(message->chat->id, question, nullptr, nullptr, nullptr, "Markdown");
                 } 
                 else 
                 {
