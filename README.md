@@ -1,4 +1,6 @@
-# Telegram 验证机器人
+# Arisu_Maid_TgBot
+
+好玩的TG小机器人 - Telegram 验证机器人
 
 这是一个用于 Telegram 群组的验证机器人，可以防止机器人和垃圾信息。
 
